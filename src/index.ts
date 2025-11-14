@@ -35,6 +35,7 @@
 import * as functions from "firebase-functions";
 import express from "express";
 import cors from "cors";
+// import multer from "multer";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -44,7 +45,21 @@ import recallRouter from "./routes/recall";
 const app = express();
 app.use(cors({origin: true}));
 app.use(express.json());
+// app.use(cors());
 
+// const upload = multer({
+//   storage: multer.memoryStorage(),
+//   limits: {fileSize: 100 * 1024 * 1024},
+// });
+
+// app.post("/upload", upload.single("video"), (req, res) => {
+//   console.log("File received:", req.file?.originalname);
+//   res.json({
+//     success: true,
+//     file: req.file?.originalname,
+//     size: req.file?.size,
+//   });
+// });
 app.use("/videos", videosRouter);
 app.use("/recall", recallRouter);
 app.get("/health", (_req, res) => res.json({ok: true}));
