@@ -39,27 +39,19 @@ import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
 
+import * as admin from "firebase-admin";
+admin.initializeApp();
+
 import videosRouter from "./routes/videos";
 import recallRouter from "./routes/recall";
+
+// Función de Storage exportada desde otro archivo
+export {generateVideoThumbnail} from "./functions/GenerateMetadata";
 
 const app = express();
 app.use(cors({origin: true}));
 app.use(express.json());
-// app.use(cors());
 
-// const upload = multer({
-//   storage: multer.memoryStorage(),
-//   limits: {fileSize: 100 * 1024 * 1024},
-// });
-
-// app.post("/upload", upload.single("video"), (req, res) => {
-//   console.log("File received:", req.file?.originalname);
-//   res.json({
-//     success: true,
-//     file: req.file?.originalname,
-//     size: req.file?.size,
-//   });
-// });
 app.use("/videos", videosRouter);
 app.use("/recall", recallRouter);
 app.get("/health", (_req, res) => res.json({ok: true}));
