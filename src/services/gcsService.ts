@@ -41,7 +41,7 @@ export async function deleteVideo(filename: string): Promise<void> {
 
 export async function getUploadUrl(filename: string): Promise<string> {
   if (!bucketName) throw new Error("GCS_BUCKET no configurado");
-  const file = storage.bucket(bucketName).file(filename);
+  const file = storage.bucket(bucketName).file(`videos/${filename}`);
   console.log(file)
   const [url] = await file.getSignedUrl({
     version: 'v4',
