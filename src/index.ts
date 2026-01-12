@@ -41,6 +41,9 @@ dotenv.config();
 
 import * as admin from "firebase-admin";
 admin.initializeApp();
+/* eslint-disable */
+export const db = admin.firestore();
+db.settings({databaseId: "default"});
 
 import videosRouter from "./routes/videos";
 import recallRouter from "./routes/recall";

@@ -1,6 +1,9 @@
 /* eslint-disable */
 import { Storage } from "@google-cloud/storage";
-import * as admin from "firebase-admin";
+//import * as admin from "firebase-admin";
+import { db } from "..";
+import * as path from "path";
+import { VideoItem } from "../routes/videos";
 
 const storage = new Storage();
 export const bucketName = process.env.GCS_BUCKET!;
@@ -31,12 +34,16 @@ export async function listVideos(): Promise<VideoDto[]> {
     }));
 }
 
-export async function deleteVideo(filename: string): Promise<void> {
+export async function deleteVideo(video: VideoItem): Promise<void> {
+  console.log("Deleting video:", video.videoPath);
   if (!bucketName) throw new Error("GCS_BUCKET no configurado");
-  const db = admin.firestore(admin.app());
-  db.settings({databaseId: "default"});
-  await storage.bucket(bucketName).file(filename).delete();
-  await db.collection("videos").doc(filename).delete();
+
+  const filename = path.basename(video.videoPath);
+  const videoId = filename.replace(path.extname(filename), "");
+
+  await storage.bucket(bucketName).file(video.videoPath).delete();
+  await storage.bucket(bucketName).file(video.thumbnailPath).delete();
+  await db.collection("videos").doc(videoId).delete();
 }
 
 export async function getUploadUrl(filename: string): Promise<string> {
@@ -51,5 +58,8 @@ export async function getUploadUrl(filename: string): Promise<string> {
   });
 
   return url;
+}
 
+export function getVideoUrlById(id: string): string {
+  return `https://storage.googleapis.com/zoom-app-dev.firebasestorage.app/${id}`;
 }

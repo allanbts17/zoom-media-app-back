@@ -4,16 +4,15 @@ import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
 import ffmpeg from "fluent-ffmpeg";
+import {db} from "..";
 
 const prefix = (process.env.PUBLIC_PREFIX || "").replace(/\/+$/, "") + "/";
-
-/* eslint-disable */
-const db = admin.firestore(admin.app());
-db.settings({databaseId: "default"});
 
 
 /**
  * Devuelve la duración de un video en segundos
+ * @param {string} filePath Ruta local del archivo de video'
+ * @return {Promise<number>} Duración en segundos
  */
 function getVideoDurationInSeconds(filePath: string): Promise<number> {
   return new Promise((resolve, reject) => {

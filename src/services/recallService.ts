@@ -32,11 +32,20 @@ export async function createBot(meeting_url: string, bot_name?: string) {
   return data; // incluye id del bot
 }
 
+export async function removeBot(id: string) {
+  const {data} = await recall.post(`/bot/${id}/leave_call`);
+  return data;
+}
+
 export async function outputMedia(bot_id: string, url: string) {
+  let splited = url.split("https://storage.googleapis.com/zoom-app-dev.firebasestorage.app");
+  let base_url = "https://us-central1-zoom-app-dev.cloudfunctions.net/api/videos/play"
+  let final_url = base_url + splited[1];
+  console.log("Final URL to play:", final_url);
   const payload = {
     camera: {
       kind: "webpage",
-      config: {url},
+      config: { url: final_url},
     },
   };
 

@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Router } from "express";
-import { createBot, outputMedia, stopMedia } from "../services/recallService";
+import { createBot, outputMedia, removeBot, stopMedia } from "../services/recallService";
 
 const router = Router();
 
@@ -17,6 +17,24 @@ router.post("/create-bot", async (req, res): Promise<void> => {
     return void res.json(result);
   } catch (err: any) {
     console.error("Error create-bot:", err?.response?.data || err);
+    return void res
+      .status(500)
+      .json({ error: err?.response?.data ?? err?.message ?? "Internal error" });
+  }
+});
+
+router.post("/remove-bot", async (req, res): Promise<void> => {
+  try {
+    const { bot_id } = req.body as { bot_id?: string };
+
+    if (!bot_id || typeof bot_id !== "string") {
+      return void res.status(400).json({ error: "bot_id requerido" });
+    }
+
+    const result = await removeBot(bot_id);
+    return void res.json(result);
+  } catch (err: any) {
+    console.error("Error remove-bot:", err?.response?.data || err);
     return void res
       .status(500)
       .json({ error: err?.response?.data ?? err?.message ?? "Internal error" });
@@ -60,5 +78,7 @@ router.delete("/output-media", async (req, res): Promise<void> => {
       .json({ error: err?.response?.data ?? err?.message ?? "Internal error" });
   }
 });
+
+
 
 export default router;
