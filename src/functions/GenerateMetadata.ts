@@ -29,6 +29,7 @@ function getVideoDurationInSeconds(filePath: string): Promise<number> {
 export const generateVideoThumbnail = onObjectFinalized(
   {
     bucket: "zoom-app-dev.firebasestorage.app",
+    memory: "512MiB",
   },
   async (event) => {
     const object = event.data;

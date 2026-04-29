@@ -72,7 +72,7 @@ router.get("/play/:id", (req, res) => {
           video {
             width: 100vw;
             height: 100vh;
-            object-fit: cover; /* 🔥 Hace que llene la pantalla */
+            object-fit: contain; /* 🔥 Hace que llene la pantalla */
             background: #000;
           }
         </style>
