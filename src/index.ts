@@ -47,6 +47,7 @@ db.settings({databaseId: "default"});
 
 import videosRouter from "./routes/videos";
 import recallRouter from "./routes/recall";
+import driveRouter from "./routes/drive";
 
 // Función de Storage exportada desde otro archivo
 export {generateVideoThumbnail} from "./functions/GenerateMetadata";
@@ -57,6 +58,7 @@ app.use(express.json());
 
 app.use("/videos", videosRouter);
 app.use("/recall", recallRouter);
+app.use("/drive", driveRouter);
 app.get("/health", (_req, res) => res.json({ok: true}));
 
 // ❗ Exporta la app bajo un único endpoint / (api)
