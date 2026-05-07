@@ -22,20 +22,37 @@ export async function listDriveFiles(folderId: string): Promise<DriveFile[]> {
   const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) throw new Error("GOOGLE_API_KEY no configurado");
 
-  const fields = "files(id,name,mimeType,size,modifiedTime)";
+  const fields = "nextPageToken, files(id,name,mimeType,size,modifiedTime)";
   const q = `'${folderId}' in parents and trashed = false`;
 
-  const { data } = await axios.get(`${DRIVE_API_BASE}/files`, {
-    params: {
-      key: apiKey,
-      q,
-      fields,
-      supportsAllDrives: true,
-      includeItemsFromAllDrives: true,
-    },
-  });
+  let allFiles: DriveFile[] = [];
+  let pageToken: string | undefined = undefined;
 
-  return (data.files ?? []) as DriveFile[];
+  do {
+    const response: any = await axios.get(`${DRIVE_API_BASE}/files`, {
+      params: {
+        key: apiKey,
+        q,
+        fields,
+        pageSize: 1000,
+        pageToken,
+        orderBy: "name",
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true,
+      },
+    });
+
+    const data = response.data;
+    allFiles = allFiles.concat(data.files ?? []);
+    pageToken = data.nextPageToken;
+  } while (pageToken);
+
+  // Ordenamiento natural para que "10" vaya después de "2"
+  allFiles.sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: "base"})
+  );
+
+  return allFiles;
 }
 
 /**
