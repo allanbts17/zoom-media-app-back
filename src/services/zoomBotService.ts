@@ -29,7 +29,7 @@ export async function zoomBotRequest(
     const response = await client.request({
       url: base + path, method, data: body,
       headers: key ? {"Idempotency-Key": key} : {},
-      timeout: 25000, retry: false, maxRedirects: 0,
+      timeout: healthRoute ? 6000 : 25000, retry: false, maxRedirects: 0,
     });
     return {status: response.status, data: response.data};
   } catch (error: unknown) {

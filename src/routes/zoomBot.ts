@@ -3,6 +3,8 @@ import {Router as createRouter, Request, Response, NextFunction} from "express";
 import * as admin from "firebase-admin";
 import {zoomBotRequest, ZoomBotError} from "../services/zoomBotService";
 
+import {zoomVmService} from "../services/zoomVmService";
+
 type Verify = (token: string) => Promise<{uid: string}>;
 
 /** Firebase identity plus an explicit allowlist, checked on every request. */
@@ -75,6 +77,32 @@ function forward(method: "GET" | "POST" | "DELETE", route: string) {
       res.status(safe.status).json({error: {code: safe.code}});
     }
   };
+}
+
+// These routes stay available when the Zoom agent VM is stopped.
+router.get("/vm", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const operation = req.query.operation;
+    if (operation !== undefined && typeof operation !== "string") throw new ZoomBotError(400, "INVALID_VM_OPERATION");
+    res.json(await zoomVmService.state(operation));
+  } catch (error: unknown) {
+    const safe = error instanceof ZoomBotError ? error : new ZoomBotError(503, "VM_CONTROL_UNAVAILABLE");
+    res.status(safe.status).json({error: {code: safe.code}});
+  }
+});
+for (const action of ["start", "stop"] as const) {
+  router.post("/vm/" + action, async (req: Request, res: Response): Promise<void> => {
+    try {
+      if (req.body && (typeof req.body !== "object" || Array.isArray(req.body) || Object.keys(req.body).length)) {
+        throw new ZoomBotError(400, "UNEXPECTED_BODY");
+      }
+      const reply = await zoomVmService.change(action, req.get("Idempotency-Key"));
+      res.status(reply.status).json(reply.data);
+    } catch (error: unknown) {
+      const safe = error instanceof ZoomBotError ? error : new ZoomBotError(503, "VM_CONTROL_UNAVAILABLE");
+      res.status(safe.status).json({error: {code: safe.code}});
+    }
+  });
 }
 
 router.get("/health/live", forward("GET", "/health/live"));
