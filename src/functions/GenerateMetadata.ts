@@ -5,6 +5,7 @@ import * as os from "os";
 import * as fs from "fs";
 import ffmpeg from "fluent-ffmpeg";
 import {db} from "..";
+import {audioContentType} from "../services/audioFiles";
 
 const prefix = (process.env.PUBLIC_PREFIX || "").replace(/\/+$/, "") + "/";
 
@@ -39,6 +40,25 @@ export const generateVideoThumbnail = onObjectFinalized(
     const contentType = object.contentType || "";
 
     if (!filePath) return;
+    if (filePath.startsWith("audios/")) {
+      audioContentType(path.basename(filePath));
+      const audioBucket = admin.storage().bucket(bucketName);
+      const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "audio-"));
+      const tempAudioPath = path.join(tempDirectory, path.basename(filePath));
+      try {
+        await audioBucket.file(filePath).download({destination: tempAudioPath});
+        const duration = await getVideoDurationInSeconds(tempAudioPath);
+        await db.collection("audios").doc(encodeURIComponent(filePath)).set({
+          audioPath: filePath,
+          audioUrl: prefix + encodeURIComponent(filePath),
+          duration,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, {merge: true});
+      } finally {
+        fs.rmSync(tempDirectory, {recursive: true, force: true});
+      }
+      return;
+    }
     if (!contentType.startsWith("video/")) {
       console.log("Archivo ignorado (no es video)", filePath);
       return;

@@ -45,6 +45,7 @@ admin.initializeApp();
 export const db = admin.firestore();
 db.settings({databaseId: "default"});
 
+import audiosRouter from './routes/audios';
 import videosRouter from "./routes/videos";
 import recallRouter from "./routes/recall";
 import driveRouter from "./routes/drive";
@@ -58,6 +59,7 @@ app.use(cors({origin: true}));
 app.use(express.json());
 
 app.use("/videos", videosRouter);
+app.use("/audios", audiosRouter);
 app.use("/recall", recallRouter);
 app.use("/drive", driveRouter);
 app.use("/zoom-bot", zoomBotRouter);
