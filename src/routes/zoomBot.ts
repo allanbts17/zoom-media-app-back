@@ -67,6 +67,14 @@ function forward(method: "GET" | "POST" | "DELETE", route: string) {
         query.set(name, value);
       }
     }
+    if (method === "GET" && route === "/v1/bots") {
+      const status = query.get("status");
+      const statuses = ["accepted", "preparing", "joining", "waiting_room", "active", "reconnecting", "leaving", "ended", "failed"];
+      if (status !== null && !statuses.includes(status)) {
+        res.status(422).json({error: {code: "VALIDATION_ERROR"}});
+        return;
+      }
+    }
     if (query.size) path += "?" + query.toString();
     try {
       const reply = await zoomBotRequest(method, path,
